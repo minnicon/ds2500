@@ -1,1 +1,57 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
 
+FILE = "Indicators_of_Anxiety_or_Depression_Based_on_Reported_Frequency_of_Symptoms_During_Last_7_Days.csv"
+
+# read in csv, clean data: organize by age and by symptoms of depressive 
+# disorder, anxiety disorder, or both 
+
+# analyze difference between years 2020-2021 (??)
+# covid years were 2020-2021 so analyze differences between 2020-2021 and 2022-2023
+# use "value" column
+
+# use linear regression, find correlation between age and anxiety/depression levels
+# knn classification - predict and classify anxiety/depression levels in 2024, 
+# and can compare it with actual data from first two months of 2024
+
+def clean_data(df):
+    '''
+    Take in a dataframe and sort by age 
+    '''
+    age_data = df[df["Group"] == "By Age"]
+    return age_data
+
+def classifier():
+    ''' Create classifier for given age group and predict anxiety/depression 
+        levels in 2024 and compare with actual
+    '''
+    
+def statistics():
+    ''' Find correlation between age groups and anxiety/depression levels in 2020;
+        Variance analysis and standard deviation calculations
+    '''
+    pass
+
+def linear_regression():
+    ''' Perform linear regression on dataset and plot
+    '''
+    pass
+
+def compare_years():
+    '''
+    analyze difference between years 2020-2021 (??)
+    covid years were 2020-2021 so analyze differences between 2020-2021 and 2022-2023
+     use "value" column
+    '''
+    pass
+
+
+def main():
+    # read in data
+    data = pd.read_csv(FILE)
+    cleaned_data = clean_data(data)
+    
+if __name__ == "__main__":
+    main()
