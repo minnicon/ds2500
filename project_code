@@ -33,34 +33,35 @@ def classifier(df, df_year):
         levels in 2024 and compare with actual
     '''
     # classifier
-    #age_data = df[df["Time Period"] == ]
-    #print(age_data)
     model = KNeighborsClassifier(n_neighbors=6)
-    features = df['Subgroup']
+    features = df['Subgroup'] # figure out to put numerical value in for features
     labels = df['Value']
     x_train, x_test, y_train, y_test = train_test_split(features, labels, random_state=0)
     model.fit(x_train, y_train)
     predict = model.predict(x_test)
     
     # 2024 prediction
-    year = df_year[(df_year['Time Period'] == 2024) & (df_year['Subgroup'] == '18 - 29 years')]
+    year = df_year[(df_year['Time Period End Date'] == 2024) & (df_year['Subgroup'] == '18 - 29 years')]
     true_pred = year['Value'].values
     year_data = year['By Age']
     year_pred = model.predict(year_data)
     
     return classification_report(y_test, predict, output_dict=True), year_pred, true_pred
     
-def statistics(df, year="2020"):
-    ''' Find correlation between age groups and mean anxiety/depression levels in 2020;
-        Find variance and sd calculations comparing predicted value in 2024 to actual values 
+def analysis_2020(df):
+    ''' Find correlation between age groups and mean anxiety/depression levels in 2020
     '''
-    year_data = df[df["Time Period End Date"] == year] # clean for year
-    mean = statistics.mean(year_data["Value"])
-    correlation = statistics.correlation(mean, year_data["Group"])
+    year_data = df[df['Time Period End Date'] == 2020] # clean for year
+    mean = statistics.mean(year_data['Value'])
+    correlation = statistics.correlation(year_data['Subgroup'], mean)
+    sd = statistics.stdev(mean)
+    var = statistics.variance(mean)
+    return correlation, sd, var
     
-    
-    return correlation, variance, sd
-    
+def analysis_2024(true_preds, year_pred):
+    ''' Find variance and sd calculations comparing predicted value in 2024 to actual values
+    '''
+    return var, sd
 
 def linear_regression():
     ''' Perform linear regression on dataset and plot
@@ -77,17 +78,20 @@ def compare_years():
 
 
 def main():
-    # read and clean data
+    # read in and clean data
     data = pd.read_csv(FILE)
     cleaned_data = clean_data(data)
-    #stats = statistics(cleaned_data)
-    knn = classifier(cleaned_data, cleaned_data)
+    print(cleaned_data['year'])
     
-if __name__ == "__main__":
-    main()
-
-    data = pd.read_csv(FILE)
-    cleaned_data = clean_data(data)
+    # predict values for 2024
+    report, pred, true_pred = classifier(cleaned_data, cleaned_data)
+    
+    # standard deviation and variance analysis for predicted 2024 values
+    var_2024, sd_2024 = analysis_2024(true_pred, pred)
+    
+    # Find correlation between age groups and mean anxiety/depression levels in 2020
+    # Include standard deviation and variance analysis calculations
+    corr_2020, sd_2020, var_2020 = analysis_2020(cleaned_data)
     
 if __name__ == "__main__":
     main()
