@@ -48,6 +48,9 @@ def clean_data(df):
 
     # Drop the 'Age Sort' column as it's no longer needed after sorting
     cleaned_df = cleaned_df.drop(columns=['Age Sort'])
+    
+    # Convert age groups to numerical values
+    cleaned_df = modify_age(cleaned_df)
 
     return cleaned_df
 
@@ -59,13 +62,19 @@ def prepare_features_labels(df):
     df_cleaned = df.dropna(subset=['Value', 'Subgroup', 'Year'])
     
     # Convert age groups to numerical values
-    age_encoder = LabelEncoder()
-    df_cleaned['AgeEncoded'] = age_encoder.fit_transform(df_cleaned['Subgroup'])
+    df_cleaned = modify_age(df_cleaned)
+    
     features = df_cleaned[['AgeEncoded', 'Year']]  # Using 'Year' as an additional feature
     labels = df_cleaned['Value']
-    
     return features, labels
 
+def modify_age(df):
+    # Convert age groups to numerical values
+    age_encoder = LabelEncoder()
+    df['AgeEncoded'] = age_encoder.fit_transform(df['Subgroup'])
+    return df
+    
+    return df_cleaned
 
 def classifier(df):
     """
@@ -73,7 +82,6 @@ def classifier(df):
     """
     # Prepare features and labels
     features, labels = prepare_features_labels(df)
-    
     # Split the data into training and test sets
     x_train, x_test, y_train, y_test = train_test_split(features, labels, test_size=0.2, random_state=42)
     
@@ -88,10 +96,13 @@ def classifier(df):
     return report
     
 def mean_within_category(df):
-    subgroups = df['Subgroup'].unique()
+    ''' Calculate mean for each age subgroup in the dataset for 2020
+    '''
+    subgroups = df['AgeEncoded'].unique()
+    df = df.dropna(subset=['Value'])
     means = []
     for age in subgroups:
-        subset = df[df['Subgroup'] == age]
+        subset = df[(df['AgeEncoded'] == age) & (df['Year'] == 2020)]
         mean = statistics.mean(subset['Value'])
         means.append(mean)
     return means, subgroups
@@ -132,10 +143,10 @@ def main():
     cleaned_data = clean_data(data)
     
     # Run the classifier and get the classification report
-    classifier_report = classifier(cleaned_data)
+    #classifier_report = classifier(cleaned_data)
     
     # Print the classification report to evaluate the model's performance
-    print(classifier_report)
+    #print(classifier_report)
     
     # predict values for 2024
     # report, pred, true_pred = classifier(cleaned_data, cleaned_data)
@@ -145,8 +156,10 @@ def main():
     
     # Find correlation between age groups and mean anxiety/depression levels in 2020
     # Include standard deviation and variance analysis calculations
-    # corr_2020, sd_2020, var_2020 = analysis_2020(cleaned_data)
+    corr_2020, sd_2020, var_2020 = analysis_2020(cleaned_data)
+    print(f"Correlation between age groups and mean anxiety depression levels in 2020: {round(corr_2020, 3)}") 
+    print(f"Standard Deviation of mean anxiety/depression levels: {round(sd_2020, 3)}")
+    print(f"Variance of mean anxiety/depression levels {round(var_2020, 3)}")
     
 if __name__ == "__main__":
     main()
-    
