@@ -87,12 +87,21 @@ def classifier(df):
     
     return report
     
+def mean_within_category(df):
+    subgroups = df['Subgroup'].unique()
+    means = []
+    for age in subgroups:
+        subset = df[df['Subgroup'] == age]
+        mean = statistics.mean(subset['Value'])
+        means.append(mean)
+    return means, subgroups
+    
 def analysis_2020(df):
     ''' Find correlation between age groups and mean anxiety/depression levels in 2020
+        For each age subgroup, calculate mean
     '''
-    year_data = df[df['Time Period End Date'] == 2020] # clean for year
-    mean = statistics.mean(year_data['Value'])
-    correlation = statistics.correlation(year_data['Subgroup'], mean)
+    mean, subgroups = mean_within_category(df)
+    correlation = statistics.correlation(subgroups, mean)
     sd = statistics.stdev(mean)
     var = statistics.variance(mean)
     return correlation, sd, var
