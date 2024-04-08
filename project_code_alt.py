@@ -98,9 +98,10 @@ def classifier(df):
 def mean_within_category(df):
     ''' Calculate mean for each age subgroup in the dataset for 2020
     '''
-    subgroups = df['AgeEncoded'].unique()
-    df = df.dropna(subset=['Value'])
     means = []
+    subgroups = df['AgeEncoded'].unique()
+    # drop NaN values
+    df = df.dropna(subset=['Value'])
     for age in subgroups:
         subset = df[(df['AgeEncoded'] == age) & (df['Year'] == 2020)]
         mean = statistics.mean(subset['Value'])
@@ -110,6 +111,7 @@ def mean_within_category(df):
 def analysis_2020(df):
     ''' Find correlation between age groups and mean anxiety/depression levels in 2020
         For each age subgroup, calculate mean
+        Return correlation, standard deviation, and variance
     '''
     mean, subgroups = mean_within_category(df)
     correlation = statistics.correlation(subgroups, mean)
@@ -127,13 +129,42 @@ def linear_regression():
     '''
     pass
 
-def compare_years():
+def mean_median_per_year(df):
+    ''' Calculate mean and median value for each year (2020-2024)
+    '''
+    means = []
+    medians = []
+    years = df['Year'].unique()
+    # drop NaN values
+    df = df.dropna(subset=['Value'])
+    for year in years:
+        subset = df[df['Year'] == year]
+        mean = statistics.mean(subset['Value'])
+        median = statistics.median(subset['Value'])
+        means.append(mean)
+        medians.append(median)
+    return means, medians, years
+
+def compare_years(df):
     '''
     analyze difference between years 2020-2021 (??)
     covid years were 2020-2021 so analyze differences between 2020-2021 and 2022-2023
     use "value" column
     '''
     pass
+
+def change_over_time(df):
+    ''' Show change in median and average age over time 
+    '''
+    mean, median, years = mean_median_per_year(df)
+    plt.plot(years, mean, color="blue", label="Mean")
+    plt.plot(years, median, color="magenta", label="Median")
+    plt.ylabel("Anxiety/Depression Value")
+    plt.xticks(range(min(years), max(years)+1, 1))
+    plt.xlabel("Year")
+    plt.title("Median and Mean Anxiety/Depression Levels Over Time")
+    plt.legend()
+    plt.show()
 
 def main():
     # Assuming 'FILE' is the path to your CSV file
@@ -143,7 +174,7 @@ def main():
     cleaned_data = clean_data(data)
     
     # Run the classifier and get the classification report
-    #classifier_report = classifier(cleaned_data)
+    # classifier_report = classifier(cleaned_data)
     
     # Print the classification report to evaluate the model's performance
     #print(classifier_report)
@@ -154,6 +185,9 @@ def main():
     # standard deviation and variance analysis for predicted 2024 values
     # var_2024, sd_2024 = analysis_2024(true_pred, pred)
     
+    # compare values in each year of dataset (plot)
+    plot = change_over_time(cleaned_data)
+    
     # Find correlation between age groups and mean anxiety/depression levels in 2020
     # Include standard deviation and variance analysis calculations
     corr_2020, sd_2020, var_2020 = analysis_2020(cleaned_data)
@@ -163,3 +197,4 @@ def main():
     
 if __name__ == "__main__":
     main()
+    
