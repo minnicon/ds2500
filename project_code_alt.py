@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Apr  7 12:12:45 2024
+
+@author: mikan
+"""
+
 import statistics
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -5,6 +12,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import LabelEncoder
+import seaborn as sns
 
 
 FILE = "Indicators_of_Anxiety_or_Depression_Based_on_Reported_Frequency_of_Symptoms_During_Last_7_Days.csv"
@@ -95,42 +103,21 @@ def classifier(df):
     
     return report
     
-def mean_within_category(df):
-    ''' Calculate mean for each age subgroup in the dataset for 2020
+def mean_within_age_group(df, year):
+    ''' Calculate mean for each age subgroup in the dataset for given year
     '''
     means = []
     subgroups = df['AgeEncoded'].unique()
     # drop NaN values
     df = df.dropna(subset=['Value'])
     for age in subgroups:
-        subset = df[(df['AgeEncoded'] == age) & (df['Year'] == 2020)]
+        subset = df[(df['AgeEncoded'] == age) & (df['Year'] == year)]
         mean = statistics.mean(subset['Value'])
         means.append(mean)
     return means, subgroups
-    
-def analysis_2020(df):
-    ''' Find correlation between age groups and mean anxiety/depression levels in 2020
-        For each age subgroup, calculate mean
-        Return correlation, standard deviation, and variance
-    '''
-    mean, subgroups = mean_within_category(df)
-    correlation = statistics.correlation(subgroups, mean)
-    sd = statistics.stdev(mean)
-    var = statistics.variance(mean)
-    return correlation, sd, var
-    
-def analysis_2024(true_preds, year_pred):
-    ''' Find variance and sd calculations comparing predicted value in 2024 to actual values
-    '''
-    return var, sd
-
-def linear_regression():
-    ''' Perform linear regression on dataset and plot
-    '''
-    pass
 
 def mean_median_per_year(df):
-    ''' Calculate mean and median value for each year (2020-2024)
+    ''' Calculate mean and median values for each year (2020-2024)
     '''
     means = []
     medians = []
@@ -144,13 +131,35 @@ def mean_median_per_year(df):
         means.append(mean)
         medians.append(median)
     return means, medians, years
+    
+def analysis_2024(true_preds, year_pred):
+    ''' Find variance and sd calculations comparing predicted value in 2024 to actual values
+    '''
+    return var, sd
+
+def linear_regression():
+    ''' Perform linear regression on dataset and plot
+    '''
+    pass
 
 def compare_years(df):
     '''
-    analyze difference between years 2020-2021 (??)
+    analyze difference between years 2020-2021 
     covid years were 2020-2021 so analyze differences between 2020-2021 and 2022-2023
     use "value" column
     '''
+    # correlation (btw age groups and anxiety/depression levels), mean, sd, and variance in each year
+    years = df['Year'].unique()
+    stats = {}
+    for year in years:
+        mean, subgroups = mean_within_age_group(df, year)
+        corr = statistics.correlation(subgroups, mean)
+        sd = statistics.stdev(mean)
+        var = statistics.variance(mean)
+        stats[year] = [corr, sd, var]
+    return stats
+
+def correlation_matrix():
     pass
 
 def change_over_time(df):
@@ -185,16 +194,17 @@ def main():
     # standard deviation and variance analysis for predicted 2024 values
     # var_2024, sd_2024 = analysis_2024(true_pred, pred)
     
+    # compare difference in stats in each year
+    stats_dct = compare_years(cleaned_data)
+    for key in stats_dct: 
+        print(f"Correlation between age groups and mean anxiety depression levels in {key}: {round(stats_dct[key][0],3)}") 
+        print(f"Standard Deviation of mean anxiety/depression levels: {round(stats_dct[key][1],3)}")
+        print(f"Variance of mean anxiety/depression levels {round(stats_dct[key][2],3)}")
+    
     # compare values in each year of dataset (plot)
     plot = change_over_time(cleaned_data)
     
-    # Find correlation between age groups and mean anxiety/depression levels in 2020
-    # Include standard deviation and variance analysis calculations
-    corr_2020, sd_2020, var_2020 = analysis_2020(cleaned_data)
-    print(f"Correlation between age groups and mean anxiety depression levels in 2020: {round(corr_2020, 3)}") 
-    print(f"Standard Deviation of mean anxiety/depression levels: {round(sd_2020, 3)}")
-    print(f"Variance of mean anxiety/depression levels {round(var_2020, 3)}")
+
     
 if __name__ == "__main__":
     main()
-    
