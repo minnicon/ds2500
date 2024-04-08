@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Apr  7 12:12:45 2024
-
-@author: mikan
-"""
-
 import statistics
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -157,11 +150,18 @@ def compare_years(df):
         sd = statistics.stdev(mean)
         var = statistics.variance(mean)
         stats[year] = [corr, sd, var]
-    return stats
+    return stats  
 
-def correlation_matrix():
-    pass
-
+def correlation_matrix(df):
+    ''' Create a correlation matrix to see which age group is most correlated with anxiety or depression 
+    '''
+    data = df[df['Year'] == 2020]
+    data = df.loc[:, ['Value', 'AgeEncoded']]
+    correlation_matrix = data.corr()
+    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f", linewidths=0.5)
+    plt.title("Correlation Matrix")
+    plt.show()
+    
 def change_over_time(df):
     ''' Show change in median and average age over time 
     '''
@@ -174,6 +174,7 @@ def change_over_time(df):
     plt.title("Median and Mean Anxiety/Depression Levels Over Time")
     plt.legend()
     plt.show()
+    
 
 def main():
     # Assuming 'FILE' is the path to your CSV file
@@ -200,11 +201,15 @@ def main():
         print(f"Correlation between age groups and mean anxiety depression levels in {key}: {round(stats_dct[key][0],3)}") 
         print(f"Standard Deviation of mean anxiety/depression levels: {round(stats_dct[key][1],3)}")
         print(f"Variance of mean anxiety/depression levels {round(stats_dct[key][2],3)}")
+        
+    # Create a correlation matrix for age group and anxiety/depression levels
+    corr_matrix = correlation_matrix(cleaned_data)
     
     # compare values in each year of dataset (plot)
-    plot = change_over_time(cleaned_data)
+    plot2 = change_over_time(cleaned_data)
     
 
     
 if __name__ == "__main__":
     main()
+    
