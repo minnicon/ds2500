@@ -223,8 +223,8 @@ def linear_regression(df):
     predictions = model.predict(X_test)
     
     # Evaluation
-    print(f"Mean squared error: {mean_squared_error(y_test, predictions)}")
-    print(f"R-squared: {r2_score(y_test, predictions)}")
+    print(f"Mean squared error: {round(mean_squared_error(y_test, predictions),4)}")
+    print(f"R-squared: {round(r2_score(y_test, predictions),4)}")
     
     # Plotting to visualize predictions against actual values
     # For plotting purposes, we'll average the predictions and actual values by Age Group and Year to make it interpretable.
@@ -301,7 +301,7 @@ def change_over_time(df):
     mean, median, years = mean_median_per_year(df)
     plt.plot(years, mean, color="blue", label="Mean")
     plt.plot(years, median, color="magenta", label="Median")
-    plt.ylabel("Anxiety/Depression Value")
+    plt.ylabel("Anxiety/Depression Levels")
     plt.xticks(range(min(years), max(years)+1, 1))
     plt.xlabel("Year")
     plt.title("Median and Mean Anxiety/Depression Levels Over Time")
@@ -322,20 +322,20 @@ def main():
     # Compare difference in stats in each year
     stats_dct = compare_years(cleaned_data)
     for key in stats_dct: 
-        print(f"Correlation between age groups and mean anxiety depression levels in {key}: {round(stats_dct[key][0],3)}") 
-        print(f"Standard Deviation of mean anxiety/depression levels: {round(stats_dct[key][1],3)}")
-        print(f"Variance of mean anxiety/depression levels: {round(stats_dct[key][2],3)}")
+        print(f"Correlation between age groups and mean anxiety depression levels in {key}: {round(stats_dct[key][0],4)}") 
+        print(f"Standard Deviation of mean anxiety/depression levels: {round(stats_dct[key][1],4)}")
+        print(f"Variance of mean anxiety/depression levels: {round(stats_dct[key][2],4)}")
         
     # Create a correlation matrix for age group and anxiety/depression levels
     corr_matrix = correlation_matrix(cleaned_data)
     
-    # Compare values in each year of the dataset (plot)
-    plot2 = change_over_time(cleaned_data)
+    # Compare mean and median anxiety/depression levels in each year of the dataset (plot)
+    median_mean_per_year = change_over_time(cleaned_data)
     
     # New: Compare mean anxiety and depression levels between 2020-2021 and 2022-2023
     period_comparison = compare_periods_mean(cleaned_data)
-    print(f"Mean anxiety/depression levels 2020-2021: {period_comparison['2020-2021 Mean']}")
-    print(f"Mean anxiety/depression levels 2022-2023: {period_comparison['2022-2023 Mean']}")
+    print(f"Mean anxiety/depression levels 2020-2021: {round(period_comparison['2020-2021 Mean'],4)}")
+    print(f"Mean anxiety/depression levels 2022-2023: {round(period_comparison['2022-2023 Mean'],4)}")
     print(f"Trend from 2020-2021 to 2022-2023: {period_comparison['Trend']}")
     
 
