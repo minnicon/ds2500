@@ -9,6 +9,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
 import seaborn as sns
+import random
 
 
 FILE = "Indicators_of_Anxiety_or_Depression_Based_on_Reported_Frequency_of_Symptoms_During_Last_7_Days.csv"
@@ -234,18 +235,21 @@ def linear_regression(df):
     
     # We plot the actual vs predicted values for a visual comparison
     plt.figure(figsize=(10, 6))
+    subgroups = df['Subgroup'].unique()
+    color = ["purple", "blue", "orange", "red", "magenta", "green", "brown"]
     for age in sorted(df['AgeEncoded'].unique()):
         age_pred = grouped_pred[grouped_pred['AgeEncoded'] == age]
         age_actual = grouped_actual[grouped_actual['AgeEncoded'] == age]
-        plt.plot(age_pred['Year'], age_pred['Predictions'], marker='o', linestyle='-', label=f'Pred Age {age}')
-        plt.plot(age_actual['Year'], age_actual['Actual'], marker='x', linestyle='--', label=f'Actual Age {age}')
+        plt.plot(age_pred['Year'], age_pred['Predictions'], color=color[age], marker='o', linestyle='-', label=f'Pred Age: {subgroups[age]}')
+        plt.plot(age_actual['Year'], age_actual['Actual'], color=color[age], marker='x', linestyle='--', label=f'Actual Age')
     
     plt.xlabel('Year')
     plt.ylabel('Anxiety/Depression Levels')
     plt.title('Predicted vs Actual Anxiety/Depression Levels by Age Group and Year')
+    plt.xticks(range(min(age_pred['Year'].unique()), max(age_pred['Year'].unique())+2, 1))
     plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
     plt.show()
-
+        
 def compare_years(df):
     '''
     analyze difference between years 2020-2021 
@@ -271,6 +275,7 @@ def correlation_matrix(df):
     # Prepare the data: 'Value' as the target variable and 'AgeEncoded' for age groups
     # Ensure to include data from all years
     data_for_corr = df[['Value', 'AgeEncoded']]
+    subgroups = df['Subgroup'].unique()
     
     # One-hot encode 'AgeEncoded' to get separate columns for each age group
     age_dummies = pd.get_dummies(data_for_corr['AgeEncoded'], prefix='AgeGroup')
@@ -279,9 +284,13 @@ def correlation_matrix(df):
     # Calculate the correlation matrix
     correlation_matrix = data_for_corr.corr()
     
+    # Save list of xlabels and ylabels for plotting
+    labels = ['Value']
+    labels.extend(subgroups[i] for i in range(len(subgroups)))
+        
     # Plot the correlation matrix
     plt.figure(figsize=(10, 8))
-    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f", linewidths=0.5)
+    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f", linewidths=0.5, xticklabels=labels, yticklabels=labels)
     plt.title("Correlation Matrix for Age Groups and Anxiety/Depression Levels")
     plt.show()
 
