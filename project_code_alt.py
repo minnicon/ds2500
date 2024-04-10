@@ -9,7 +9,6 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
 import seaborn as sns
-import random
 
 
 FILE = "Indicators_of_Anxiety_or_Depression_Based_on_Reported_Frequency_of_Symptoms_During_Last_7_Days.csv"
@@ -26,6 +25,7 @@ FILE = "Indicators_of_Anxiety_or_Depression_Based_on_Reported_Frequency_of_Sympt
 # knn classification - predict and classify anxiety/depression levels in 2024, 
 # and can compare it with actual data from first two months of 2024
 
+# Cleans the input DataFrame
 def clean_data(df):
     '''
     Take in a dataframe and sort by age, clean data to so that 
@@ -63,13 +63,13 @@ def clean_data(df):
 
     return cleaned_df
 
-
+# Prepares features and labels for ml
 def prepare_features_labels(df, exclude_year=2024):
     """
     Prepare features and labels for the classifier, removing any rows with NaN values and optionally excluding data for a specific year.
     """
     if exclude_year:
-        df = df[df['Year'] != exclude_year]  # Exclude the specified year from the dataset
+        df = df[df['Year'] != exclude_year]  
 
     features = df[['AgeEncoded', 'Year']]
     labels = df['Value']
@@ -80,9 +80,8 @@ def modify_age(df):
     age_encoder = LabelEncoder()
     df['AgeEncoded'] = age_encoder.fit_transform(df['Subgroup'])
     return df
-    
-    return df_cleaned
 
+# Categorizes 'Value' into discrete bins to simplify analysis and modeling
 def discretize_values(df, bins, labels):
     """
     Discretize the 'Value' column into categories.
@@ -97,6 +96,7 @@ def discretize_values(df, bins, labels):
     df['Value'] = pd.cut(df['Value'], bins=bins, labels=labels, include_lowest=True)
     return df
 
+# Trains K-Nearest Neighbors (KNN) classifier
 def classifier(df):
     """
     Train a KNN classifier to predict categorized anxiety/depression levels based on age groups and year.
@@ -123,8 +123,9 @@ def classifier(df):
     print(confusion_matrix(Y_test, predictions))
     print(classification_report(Y_test, predictions))
     
-    return knn, le  # Return the trained model and label encoder for further use
+    return knn, le
     
+# Calculates the mean value of anxiety/depression levels for each age subgroup
 def mean_within_age_group(df, year):
     ''' Calculate mean for each age subgroup in the dataset for given year
     '''
@@ -138,6 +139,7 @@ def mean_within_age_group(df, year):
         means.append(mean)
     return means, subgroups
 
+# Compares the mean anxiety and depression levels between periods
 def compare_periods_mean(df):
     '''
     Compares the mean anxiety and depression levels between 2020-2021 and 2022-2023.
@@ -164,6 +166,7 @@ def compare_periods_mean(df):
         "Trend": trend
     }
 
+# Calculates mean and median anxiety/depression levels for each year
 def mean_median_per_year(df):
     ''' Calculate mean and median values for each year (2020-2024)
     '''
@@ -180,6 +183,7 @@ def mean_median_per_year(df):
         medians.append(median)
     return means, medians, years
     
+# Compares predicted anxiety/depression levels for 2024 against actual values
 def analysis_2024(actual, predictions, label_encoder):
     """
     Compares predicted values for 2024 against actual values.
@@ -203,13 +207,13 @@ def analysis_2024(actual, predictions, label_encoder):
     
     return accuracy
 
+# Multi-linear regression analysis to understand the relationship between age groups, years, and anxiety/depression levels
 def linear_regression(df):
     """
     Perform enhanced multi-linear regression to understand how anxiety and depression levels 
     are influenced by age groups across the years 2020-2023.
     """
     # Prepare features (Age group and Year) and labels (Value)
-    # Make sure 'Year' and 'AgeEncoded' are used as features to capture the multi-linear regression model
     features, labels = df[['AgeEncoded', 'Year']], df['Value']
     
     # Split the dataset into training and testing sets
@@ -227,7 +231,6 @@ def linear_regression(df):
     print(f"R-squared: {round(r2_score(y_test, predictions),4)}")
     
     # Plotting to visualize predictions against actual values
-    # For plotting purposes, we'll average the predictions and actual values by Age Group and Year to make it interpretable.
     X_test['Predictions'] = predictions
     X_test['Actual'] = y_test
     grouped_pred = X_test.groupby(['AgeEncoded', 'Year'])['Predictions'].mean().reset_index()
@@ -249,7 +252,8 @@ def linear_regression(df):
     plt.xticks(range(min(age_pred['Year'].unique()), max(age_pred['Year'].unique())+2, 1))
     plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
     plt.show()
-        
+     
+# Analyzes differences in correlation, standard deviation, and variance of anxiety/depression levels across different years    
 def compare_years(df):
     '''
     analyze difference between years 2020-2021 
@@ -267,13 +271,13 @@ def compare_years(df):
         stats[year] = [corr, sd, var]
     return stats
 
+# Examines the relationship between age groups and anxiety/depression levels across all years as a heatmap
 def correlation_matrix(df):
     ''' 
     Create an enhanced correlation matrix to see which age group is most correlated 
     with anxiety or depression across all years. 
     '''
-    # Prepare the data: 'Value' as the target variable and 'AgeEncoded' for age groups
-    # Ensure to include data from all years
+    # 'Value' as the target variable and 'AgeEncoded' for age groups
     data_for_corr = df[['Value', 'AgeEncoded']]
     subgroups = df['Subgroup'].unique()
     
@@ -294,7 +298,7 @@ def correlation_matrix(df):
     plt.title("Correlation Matrix for Age Groups and Anxiety/Depression Levels")
     plt.show()
 
-    
+# Plot changes in mean and median anxiety/depression levels over time
 def change_over_time(df):
     ''' Show change in median and average age over time 
     '''
@@ -308,9 +312,8 @@ def change_over_time(df):
     plt.legend()
     plt.show()
     
-
 def main():
-    # Assuming 'FILE' is the path to your CSV file
+    # FILE pathing
     data = pd.read_csv(FILE)
     
     # Clean and prepare the data
@@ -326,18 +329,17 @@ def main():
         print(f"Standard Deviation of mean anxiety/depression levels: {round(stats_dct[key][1],4)}")
         print(f"Variance of mean anxiety/depression levels: {round(stats_dct[key][2],4)}")
         
-    # Create a correlation matrix for age group and anxiety/depression levels
+    # Correlation matrix for age group and anxiety/depression levels
     corr_matrix = correlation_matrix(cleaned_data)
     
-    # Compare mean and median anxiety/depression levels in each year of the dataset (plot)
+    # Compare mean and median anxiety/depression levels in each year of the dataset
     median_mean_per_year = change_over_time(cleaned_data)
     
-    # New: Compare mean anxiety and depression levels between 2020-2021 and 2022-2023
+    # Compare mean anxiety and depression levels between 2020-2021 and 2022-2023
     period_comparison = compare_periods_mean(cleaned_data)
     print(f"Mean anxiety/depression levels 2020-2021: {round(period_comparison['2020-2021 Mean'],4)}")
     print(f"Mean anxiety/depression levels 2022-2023: {round(period_comparison['2022-2023 Mean'],4)}")
     print(f"Trend from 2020-2021 to 2022-2023: {period_comparison['Trend']}")
-    
 
 if __name__ == "__main__":
     main()
